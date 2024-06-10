@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -44,9 +43,7 @@ func TestAddGetDelete(t *testing.T) {
 	err = store.Delete(id)
 	require.NoError(t, err)
 	_, err = store.GetParcelByID(id)
-	if err != nil {
-		fmt.Println(err)
-	}
+	require.NoError(t, err)
 
 }
 
@@ -55,7 +52,6 @@ func TestSetAddress(t *testing.T) {
 	require.NoError(t, err)
 
 	defer db.Close()
-
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 	id, err := store.Add(parcel)
@@ -106,8 +102,8 @@ func TestGetByClient(t *testing.T) {
 	assert.Equal(t, len(parcels), len(storedParcel))
 	require.NotEmpty(t, storedParcel)
 
-	for _, packages := range storedParcel {
-		mapParcel := parcelMap[packages.Number]
-		require.Equal(t, packages, mapParcel)
+	for _, pack := range storedParcel {
+		mapParcel := parcelMap[pack.Number]
+		require.Equal(t, pack, mapParcel)
 	}
 }

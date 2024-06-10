@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 type ParcelStore struct {
@@ -34,23 +33,25 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	row, err := s.db.Query("SELECT * FROM parcel WHERE client = :client", sql.Named("client", client))
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 	defer row.Close()
-	parcels := []Parcel{}
+	var res []Parcel
 	for row.Next() {
-		var p Parcel
+		if err = row.Err(); err != nil {
+			return nil, err
+		}
+		p := Parcel{}
 		err := row.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 		if err != nil {
-			fmt.Println(err)
+			return []Parcel{}, err
 		}
-		parcels = append(parcels, p)
-		if err != nil {
-			fmt.Println(err)
-		}
-
+		res = append(res, p)
 	}
-	return parcels, nil
+	if err = row.Err(); err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (s ParcelStore) GetParcelByID(parcelID int) (Parcel, error) {
